@@ -40,6 +40,8 @@ class ObjectStorage:
         return bucket, region, access_key, secret_key
 
     def upload(self, filename: str):
-        self.client.upload_file(filename, self.bucket, filename)
+        self.client.upload_file(filename, self.bucket, filename,            ExtraArgs={'ACL': 'public-read'})
+        file_url = f"https://{self.bucket}.{self.region}.digitaloceanspaces.com/{filename}"
+        return file_url
 
 

@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Optional
+from typing import Dict, Callable, Optional, List
 from fastapi import APIRouter
 from models.models import Model
 
@@ -8,27 +8,46 @@ from pydantic import BaseModel
 class Item(BaseModel):
     name: str
 
+class TTSListResponse(BaseModel):
+    tts: List[str]
+
+class TTSCurrentResponse(BaseModel):
+    current_tts: Optional[str]
+
+class TTSSetCurrentResponse(BaseModel):
+    status: str
+    current_tts: str
+    is_loaded: bool
+
+class TTSSetCurrentError(BaseModel):
+    status: str
+    message: str
 
 def create_tts_router(
     tts_models: Dict[str, Model],
     get_current_tts: Callable[[], Optional[Model]],
-    set_current_tts: Callable[[Model], None]
+    set_current_tts: Callable[[Model], None],
+    is_queue_empty: Callable[[], bool]
     ) -> APIRouter:
     tts_router = APIRouter()
         
-    @tts_router.get("/tts/list", tags=["tts"])
+    @tts_router.get("/list", tags=["tts"])
     async def list():
-        return {"tts": list(tts_models.keys())}
+        return TTSListResponse(tts=[str(k) for k in tts_models.keys()])
 
-    @tts_router.get("/tts", tags=["tts"])
+    @tts_router.get("/", tags=["tts"])
     async def get_current():
-        current = get_current_tts()
-        if current is None:
-            return {"current_tts": None}
-        return {"current_tts": current.model_name}
+        return TTSCurrentResponse(current_tts=get_current_tts().model_name)
 
-    @tts_router.put("/tts", tags=["tts"])
+    @tts_router.put("/", tags=["tts"])
     async def set_current(item: Item):
+
+        if not is_queue_empty():
+            return TTSSetCurrentError(
+                status="error",
+                message="Queue is not empty"
+            )
+
         current = get_current_tts()
         if current is not None and current.is_loaded:
             current.unload()
@@ -39,11 +58,10 @@ def create_tts_router(
     
         set_current_tts(new_model)
 
-        return {
-            "status": "success",
-            "current_tts": new_model.model_name,
-            "is_loaded": new_model.is_loaded
-        }
-
+        return TTSSetCurrentResponse(
+            status="success",
+            current_tts=new_model.model_name,
+            is_loaded=new_model.is_loaded
+        )
     
     return tts_router

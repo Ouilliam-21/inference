@@ -1,5 +1,6 @@
 from models.models import Model
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import json
 
 
 class Qwen(Model):
@@ -17,25 +18,15 @@ class Qwen(Model):
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
             self.is_loaded = True
             print(f"✅ Model loaded successfully: {self.model_name}")
+
     
-    def unload(self) -> None:
-        """Unload the model from memory"""
-        if self.is_loaded:
-            print(f"🔄 Unloading model: {self.model_name}")
-            del self.model
-            del self.tokenizer
-            self.model = None
-            self.tokenizer = None
-            self.is_loaded = False
-            print(f"✅ Model unloaded: {self.model_name}")
-    
-    def generate(self, user_input: str) -> str:
+    def generate(self, system_prompt: str, user_input: str) -> str:
         """Generate a response from the LLM"""
         if not self.is_loaded:
             raise RuntimeError("Model must be loaded before generating. Call load() first.")
         
         messages = [
-            {"role": "system", "content": "You're name is John Doe and you're a helpful french assistant, you always answer in json format like this: {\"answer\": \"your answer here\"}"},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_input},
         ]
 
@@ -61,10 +52,9 @@ class Qwen(Model):
         except ValueError:
             index = 0
 
-        thinking_content = self.tokenizer.decode(output_ids[:index], skip_special_tokens=True).strip("\n")
         content = self.tokenizer.decode(output_ids[index:], skip_special_tokens=True).strip("\n")
 
-        print("thinking content:", thinking_content)
-        print("content:", content)
+        if content.startswith('{{') and content.endswith('}}'):
+            content = content[1:-1]
 
-        return content
+        return json.loads(content)

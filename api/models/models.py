@@ -18,10 +18,16 @@ class Model(ABC):
         """Load the model into memory"""
         pass
     
-    @abstractmethod
     def unload(self) -> None:
         """Unload the model from memory"""
-        pass
+        if self.is_loaded:
+            print(f"🔄 Unloading model: {self.model_name}")
+            del self.model
+            del self.tokenizer
+            self.model = None
+            self.tokenizer = None
+            self.is_loaded = False
+            print(f"✅ Model unloaded: {self.model_name}")
     
     @abstractmethod
     def generate(self, *args, **kwargs) -> str:

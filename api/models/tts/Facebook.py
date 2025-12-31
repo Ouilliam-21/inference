@@ -1,3 +1,4 @@
+from typing import Tuple
 from models.models import Model
 from transformers import AutoTokenizer, VitsModel
 import torch
@@ -23,18 +24,7 @@ class FacebookMms(Model):
             self.is_loaded = True
             print(f"✅ Model loaded successfully: {self.model_name}")
     
-    def unload(self) -> None:
-        """Unload the model from memory"""
-        if self.is_loaded:
-            print(f"🔄 Unloading model: {self.model_name}")
-            del self.model
-            del self.tokenizer
-            self.model = None
-            self.tokenizer = None
-            self.is_loaded = False
-            print(f"✅ Model unloaded: {self.model_name}")
-    
-    def generate(self, user_input: str) -> str:
+    def generate(self, user_input: str) -> Tuple[str, float]:
         """Generate speech audio from text"""
         if not self.is_loaded:
             raise RuntimeError("Model must be loaded before generating. Call load() first.")
@@ -72,12 +62,14 @@ class FacebookMms(Model):
         elif audio_numpy.dtype != np.int16:
             # Convert to int16 if not already
             audio_numpy = audio_numpy.astype(np.int16)
+
         
         output_path = f"tts_output_{uuid.uuid4()}.wav"
+        audio_duration = len(audio_numpy) / sampling_rate
         scipy.io.wavfile.write(
             output_path, 
             rate=sampling_rate, 
             data=audio_numpy
         )
         
-        return output_path
+        return output_path, audio_duration
