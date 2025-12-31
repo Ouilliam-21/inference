@@ -1,8 +1,51 @@
 [tools]
 python = "3.12"
 
+[env]
+_.file = '.env'
+
 [tasks.start-prod]
-run = "uvicorn api.main:app --reload --host 0.0.0.0 --port 8000"
+run = "cd api && uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1 --loop uvloop --http h11"
 
 [tasks.start-dev]
 run = "fastapi dev api/main.py"
+
+[tasks.list-llm]
+description = "List available LLM models"
+run = "curl http://localhost:8000/llm/list"
+
+[tasks.list-tts]
+description = "List available TTS models"
+run = "curl http://localhost:8000/tts/list"
+
+[tasks.get-current-llm]
+description = "Get current LLM model"
+run = "curl http://localhost:8000/llm"
+
+[tasks.get-current-tts]
+description = "Get current TTS model"
+run = "curl http://localhost:8000/tts"
+
+[tasks.set-llm-qwen]
+description = "Switch to Qwen/Qwen3-0.6B model"
+run = "curl -X PUT http://localhost:8000/llm -H 'Content-Type: application/json' -d '{\"name\": \"Qwen/Qwen3-0.6B\"}'"
+
+[tasks.set-llm-dolphin]
+description = "Switch to Dolphin-X1-8B-GGUF model"
+run = "curl -X PUT http://localhost:8000/llm -H 'Content-Type: application/json' -H \"Authorization: Bearer $AUTH_TOKEN\" -d '{\"name\": \"dphn/Dolphin-X1-8B-GGUF\"}'"
+
+[tasks.set-tts-fra]
+description = "Switch to French TTS model"
+run = "curl -X PUT http://localhost:8000/tts -H 'Content-Type: application/json' -d '{\"name\": \"facebook/mms-tts-fra\"}'"
+
+[tasks.set-tts-eng]
+description = "Switch to English TTS model"
+run = "curl -X PUT http://localhost:8000/tts -H 'Content-Type: application/json' -d '{\"name\": \"facebook/mms-tts-eng\"}'"
+
+[tasks.add-event]
+description = "Add event to queue"
+run = "curl -X POST http://localhost:8000/events/ -H 'Content-Type: application/json' -H \"Authorization: Bearer $AUTH_TOKEN\" -d '{\"eventIds\": [\"04773c7b-63a2-4c31-a436-f98206a60162\"]}'"
+
+[tasks.list-events]
+description = "List events"
+run = "curl http://localhost:8000/events/list"
