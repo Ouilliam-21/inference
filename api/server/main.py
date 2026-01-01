@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from middleware.auth import add_auth_header
 from models.llm.DolphinGGUF import DolphinGGUF
 from models.models import Model
-from routes import create_tts_router, create_event_router, create_llm_router
+from routes import create_tts_router, create_event_router, create_llm_router, create_health_router
 from models.llm import Qwen
 from models.tts import FacebookMms
 from fastapi.middleware.cors import CORSMiddleware
@@ -93,9 +93,12 @@ class Server:
             is_queue_empty=lambda: self.events.empty()
         )
 
+        health_router = create_health_router()
+
         self.app.include_router(events_router, prefix="/events")
         self.app.include_router(llm_router, prefix="/llm")
         self.app.include_router(tts_router, prefix="/tts")
+        self.app.include_router(health_router, prefix="/health")
 
     async def startup_event(self):
         """Called when the server starts (event loop is running)"""
