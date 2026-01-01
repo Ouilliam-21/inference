@@ -14,7 +14,7 @@ class Qwen(Model):
         """Load the model and tokenizer into memory"""
         if not self.is_loaded:
             print(f"🔄 Loading model: {self.model_name}")
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name).to(self.device)
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             self.model = AutoModelForCausalLM.from_pretrained(self.model_name).to(self.device)
             self.is_loaded = True
             print(f"✅ Model loaded successfully: {self.model_name}")
