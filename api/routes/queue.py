@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Callable
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
 import json
@@ -9,16 +9,17 @@ import asyncio
 from database.models import ProcessingRiotEventJob, ProcessingRiotEventStatus
 from database.database import Database
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from prompts.manager import PromptManager
+import random
 
 class EventIds(BaseModel):
     eventIds: List[str]
 
 def create_event_router(
     events_queue: asyncio.Queue[ProcessingRiotEventJob], 
-    current_tts: Model, 
-    current_llm: Model,
+    get_current_tts: Callable[[], Model], 
+    get_current_llm: Callable[[], Model],
     bucket: ObjectStorage,
     database: Database
     ) -> APIRouter:
@@ -81,6 +82,7 @@ def create_event_router(
             database.update_processing_riot_events_job(last_event)
             await events_status.put(last_event)
 
+            current_llm = get_current_llm()
             last_event.llm_started_at = datetime.now()
             last_event.llm_model_name = current_llm.model_name
 
@@ -91,6 +93,7 @@ def create_event_router(
 
             print(f"🔍 Raw LLM response: '{response['answer']}'")
 
+            current_tts = get_current_tts()
             last_event.tts_started_at = datetime.now()
             last_event.tts_model_name = current_tts.model_name
             audio_path,audio_duration = await asyncio.to_thread(current_tts.generate, response['answer'])
@@ -137,7 +140,7 @@ def create_event_router(
                 faker = ProcessingRiotEventJob(
                     riot_event_id=f"{uuid.uuid4()}",
                     status=ProcessingRiotEventStatus.PENDING,
-                    input_text="test"
+                    input_text="Fake test input"
                 )
                 yield ": keep-alive\n\n"
                 yield (
@@ -146,7 +149,45 @@ def create_event_router(
                     f"retry: 1000\n"
                     f"data: {faker.model_dump_json()}\n\n"
                 )
-                await asyncio.sleep(2)
+                await asyncio.sleep(5)
+
+                faker.status=ProcessingRiotEventStatus.PROCESSING
+
+                yield ": keep-alive\n\n"
+                yield (
+                    f"event: event_status\n"
+                    f"id: {uuid.uuid4()}\n"
+                    f"retry: 1000\n"
+                    f"data: {faker.model_dump_json()}\n\n"
+                )
+                await asyncio.sleep(5)
+
+                faker.status=ProcessingRiotEventStatus.COMPLETED
+                faker.audio_url="https://ouilliam-audio.nyc3.digitaloceanspaces.com/tts_output_f4ae88ab-cc37-4e41-a18a-c967cbe2160b.wav"
+
+                faker.llm_started_at = datetime.now() - timedelta(seconds=15)
+                faker.llm_completed_at = datetime.now() - timedelta(seconds=14)
+                faker.llm_model_name = "fake-llm"
+                faker.llm_text = "Voici une réponse LLM de test vulgaire."
+                faker.error_message = None
+                faker.tts_started_at = datetime.now() - timedelta(seconds=12)
+                faker.tts_completed_at = datetime.now() - timedelta(seconds=10)
+                faker.tts_model_name = "fake-tts"
+                faker.audio_duration = random.uniform(2.5, 8.0)
+                faker.created_at = datetime.now() - timedelta(seconds=20)
+                faker.updated_at = datetime.now()
+
+
+
+                yield ": keep-alive\n\n"
+                yield (
+                    f"event: event_status\n"
+                    f"id: {uuid.uuid4()}\n"
+                    f"retry: 1000\n"
+                    f"data: {faker.model_dump_json()}\n\n"
+                )
+
+                await asyncio.sleep(5)
 
         return StreamingResponse(
             generator(),

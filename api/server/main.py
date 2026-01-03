@@ -75,8 +75,8 @@ class Server:
     def _init__routes(self):
         events_router, self.start_events_processor = create_event_router(
             self.events,
-            self.current_tts, 
-            self.current_llm,
+            lambda: self.current_tts, 
+            lambda: self.current_llm,
             self.bucket,
             self.database
         )

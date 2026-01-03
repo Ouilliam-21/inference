@@ -48,12 +48,10 @@ def create_llm_router(
             )
 
         current = get_current_llm()
-        if current is not None and current.is_loaded:
-            current.unload()
+        current.unload()
 
         new_model = llm_models[item.name]
-        if not new_model.is_loaded:
-            new_model.load()
+        new_model.load()
     
         set_current_llm(new_model)
 
