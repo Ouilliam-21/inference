@@ -45,6 +45,8 @@ class Server:
             "dphn/Dolphin-X1-8B-GGUF": DolphinGGUF(),
             "dphn/Dolphin3.0-Llama3.1-8B-GGUF-F16": DolphinGGUF("dphn/Dolphin3.0-Llama3.1-8B-GGUF", "Dolphin3.0-Llama3.1-8B-F16.gguf"),
             "dphn/Dolphin3.0-Llama3.1-8B-GGUF-Q8": DolphinGGUF("dphn/Dolphin3.0-Llama3.1-8B-GGUF", "Dolphin3.0-Llama3.1-8B-Q8_0.gguf"),
+            "NEO matrix 20b Q8": DolphinGGUF("DavidAU/OpenAi-GPT-oss-20b-abliterated-uncensored-NEO-Imatrix-gguf", "OpenAI-20B-NEOPlus-Uncensored-Q8_0.gguf"),
+            "HERETIC 20b Q8": DolphinGGUF("DavidAU/OpenAi-GPT-oss-20b-HERETIC-uncensored-NEO-Imatrix-gguf", "OpenAI-20B-NEOPlus-Uncensored-Q8_0.gguf"),
         }
 
         self.tts_models = {
