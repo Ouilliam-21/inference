@@ -1,0 +1,32 @@
+system_prompt:
+  # System prompt
+  # This is the system prompt for the LLM
+  # Example: You are a helpful assistant that can answer questions and help with tasks.
+
+event_prompts:
+  # Event prompts
+  # Define each event prompt here
+  ChampionKill:
+    template:
+      # Define the prompt for the ChampionKill event
+  HeraldKill:
+    template:
+      # Define the prompt for the HeraldKill event
+  BaronKill:
+    template:
+      # Define the prompt for the BaronKill event
+  DragonKill:
+    template:
+      # Define the prompt for the DragonKill event
+  TurretKilled:
+    template:
+      # Define the prompt for the TurretKilled event
+  InhibKilled:
+    template:
+      # Define the prompt for the InhibKilled event
+  MultiKill:
+    template:
+      # Define the prompt for the MultiKill event
+  Ace:
+    template:
+      # Define the prompt for the Ace event

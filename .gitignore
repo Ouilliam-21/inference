@@ -12,3 +12,5 @@ cache
 
 # Finder (MacOS) folder config
 .DS_Store
+
+server/config.yaml

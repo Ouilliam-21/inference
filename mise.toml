@@ -4,48 +4,51 @@ python = "3.12"
 [env]
 _.file = '.env'
 
-[tasks.start-prod]
-run = "cd api && uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1 --loop uvloop --http h11"
+[tasks.prod]
+run = "uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1 --loop uvloop --http h11"
 
-[tasks.start-dev]
-run = "fastapi dev api/main.py"
+[tasks."dev"]
+run = "fastapi dev main.py"
 
-[tasks.list-llm]
+[tasks."dev:custom"]
+run = "uvicorn main:app --reload --host 0.0.0.0 --port 8000 -- --config server/config.example.yaml"
+
+[tasks."swagger:llm:list"]
 description = "List available LLM models"
-run = "curl http://localhost:8000/llm/list"
+run = "curl http://localhost:8000/llm/list -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.list-tts]
+[tasks."swagger:tts:list"]
 description = "List available TTS models"
-run = "curl http://localhost:8000/tts/list"
+run = "curl http://localhost:8000/tts/list -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.get-current-llm]
+[tasks."swagger:llm:get"]
 description = "Get current LLM model"
-run = "curl http://localhost:8000/llm"
+run = "curl http://localhost:8000/llm -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.get-current-tts]
+[tasks."swagger:tts:get"]
 description = "Get current TTS model"
-run = "curl http://localhost:8000/tts"
+run = "curl http://localhost:8000/tts -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.set-llm-qwen]
+[tasks."swagger:llm:switch:qwen"]
 description = "Switch to Qwen/Qwen3-0.6B model"
-run = "curl -X PUT http://localhost:8000/llm -H 'Content-Type: application/json' -d '{\"name\": \"Qwen/Qwen3-0.6B\"}'"
+run = "curl -X PUT http://localhost:8000/llm/switch -H 'Content-Type: application/json' -d '{\"name\": \"Qwen/Qwen3-0.6B\"}' -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.set-llm-dolphin]
+[tasks."swagger:llm:switch:dolphin"]
 description = "Switch to Dolphin-X1-8B-GGUF model"
-run = "curl -X PUT http://localhost:8000/llm -H 'Content-Type: application/json' -H \"Authorization: Bearer $AUTH_TOKEN\" -d '{\"name\": \"dphn/Dolphin-X1-8B-GGUF\"}'"
+run = "curl -X PUT http://localhost:8000/llm/switch -H 'Content-Type: application/json' -d '{\"name\": \"dphn/Dolphin-X1-8B-GGUF\"}' -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.set-tts-fra]
+[tasks."swagger:tts:switch:fra"]
 description = "Switch to French TTS model"
-run = "curl -X PUT http://localhost:8000/tts -H 'Content-Type: application/json' -d '{\"name\": \"facebook/mms-tts-fra\"}'"
+run = "curl -X PUT http://localhost:8000/tts -H 'Content-Type: application/json' -d '{\"name\": \"facebook/mms-tts-fra\"}' -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.set-tts-eng]
+[tasks."swagger:tts:switch:eng"]
 description = "Switch to English TTS model"
-run = "curl -X PUT http://localhost:8000/tts -H 'Content-Type: application/json' -d '{\"name\": \"facebook/mms-tts-eng\"}'"
+run = "curl -X PUT http://localhost:8000/tts/switch -H 'Content-Type: application/json' -d '{\"name\": \"facebook/mms-tts-eng\"}' -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
 
-[tasks.add-event]
+[tasks."swagger:events:add"]
 description = "Add event to queue"
-run = "curl -X POST http://localhost:8000/events/ -H 'Content-Type: application/json' -H \"Authorization: Bearer $AUTH_TOKEN\" -d '{\"eventIds\": [\"04773c7b-63a2-4c31-a436-f98206a60162\"]}'"
+run = "curl -X POST http://localhost:8000/events/add -H 'Content-Type: application/json' -H \"Authorization: Bearer $AUTH_TOKEN\" -d '{\"eventIds\": [\"04773c7b-63a2-4c31-a436-f98206a60162\"]}' | jq"
 
-[tasks.list-events]
+[tasks."swagger:events:list"]
 description = "List events"
-run = "curl http://localhost:8000/events/list"
+run = "curl http://localhost:8000/events/list -H \"Authorization: Bearer $AUTH_TOKEN\" | jq"
