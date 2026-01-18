@@ -21,7 +21,7 @@ async def switch_tts_model(
 ):
     """Set current TT model"""
     try:
-        new_model = service.set_current_model(request.name)
+        new_model = service.set_current_model(request.model_name)
                 
         return SetResponse(
             current_model=new_model.model_name,

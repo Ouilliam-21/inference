@@ -227,7 +227,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Reach me at : gauron.dorian.pro@gmail.com
 
-Project Link: [https://github.com/yourusername/oui-lliam](https://github.com/yourusername/oui-lliam)
+Project Link: [https://github.com/Ouilliam-21/inference](https://github.com/Ouilliam-21/inference)
 
 <p align="right"><a href="#top">⬆️</a></p>
 
