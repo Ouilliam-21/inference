@@ -22,7 +22,7 @@ async def generator(request: Request, service: EventService):
         )
         await sleep(0.25)
 
-async def generator_testing():
+async def generator_testing(request: Request, service: EventService):
 
     while True:
         faker = ProcessingRiotEventJob(

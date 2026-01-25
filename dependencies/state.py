@@ -4,6 +4,8 @@ from typing import Optional
 from database.models import ProcessingRiotEventJob
 from ai.models.registry import ModelRegistry
 from ai.prompts.manager import PromptManager
+from externals.objectStorage import ObjectStorage
+from database.database import Database
 
 class AppState:
     """Application-wide state container"""
@@ -13,7 +15,8 @@ class AppState:
         self.events_queue = Queue[ProcessingRiotEventJob]()
         self.events_status = Queue[ProcessingRiotEventJob]()
         self.prompt_manager = PromptManager(path)
-
+        self.database = Database() 
+        self.object_storage = ObjectStorage()
 
 def initialize_app_state(config_path: str) -> None:
     """Initialize app state with config path."""
@@ -37,6 +40,11 @@ def get_app_state() -> AppState:
         print(f"⚠️  AppState not initialized, using default: {default_path}")
     return _app_state
 
+def get_database() -> Database:
+    return get_app_state().database
+
+def get_object_storage() -> ObjectStorage:
+    return get_app_state().object_storage
 
 def get_model_registry() -> ModelRegistry:
     """Dependency for model registry"""

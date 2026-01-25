@@ -57,7 +57,9 @@ class Server:
             model_registry=app_state.model_registry,
             events_queue=app_state.events_queue,
             events_status=app_state.events_status,
-            prompt_manager=app_state.prompt_manager
+            prompt_manager=app_state.prompt_manager,
+            database=app_state.database,
+            object_storage=app_state.object_storage
         )
         
         create_task(event_service.events_processor())

@@ -3,9 +3,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from middlewares.auth import verify_token_flexible
-from routes.events.generator import generator
+from routes.events.generator import generator, generator_testing
 from schemas.events.schema import AddPayload, AddResponse, ClearResponse, InfoResponse
 from services.events.service import EventService
+
+from database.models import ProcessingRiotEventJob, ProcessingRiotEventStatus
+from uuid import uuid4
 
 Service = Annotated[EventService, Depends()]
 
@@ -25,7 +28,15 @@ async def add_event(events: AddPayload, service: Service):
 @events_router.get("/list", response_model=InfoResponse)
 async def list_events(service: Service):
     """List all events"""
-    return InfoResponse(events=service.get_tracked_events_values())
+    fake_events = [
+        ProcessingRiotEventJob(
+            riot_event_id=f"{uuid4()}",
+            status=ProcessingRiotEventStatus.PENDING,
+            input_text=f"Fake test input {i+1}"
+        ) for i in range(3)
+    ]
+    return InfoResponse(events=fake_events)
+    """ return InfoResponse(events=service.get_tracked_events_values()) """
 
 @events_router.put("/clear", response_model=ClearResponse)
 async def clear_events(service: Service):
@@ -36,7 +47,7 @@ async def clear_events(service: Service):
 @events_router.get("/sse")
 async def stream_events_status(request: Request, service: Service):
     return StreamingResponse(
-        generator(request, service),
+        generator_testing(request, service),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

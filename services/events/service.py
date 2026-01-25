@@ -9,7 +9,7 @@ from fastapi import Depends
 from externals.objectStorage import ObjectStorage
 from database.database import Database
 from database.models import ProcessingRiotEventJob, ProcessingRiotEventStatus
-from dependencies.state import get_events_queue, get_events_status, get_model_registry, get_prompt_manager
+from dependencies.state import get_database, get_object_storage, get_events_queue, get_events_status, get_model_registry, get_prompt_manager
 from ai.models.registry import ModelRegistry
 from ai.prompts.manager import PromptManager
 
@@ -22,15 +22,17 @@ class EventService:
         model_registry: Annotated[ModelRegistry, Depends(get_model_registry)],
         events_queue: Annotated[Queue[ProcessingRiotEventJob], Depends(get_events_queue)],
         events_status: Annotated[Queue[ProcessingRiotEventJob], Depends(get_events_status)],
-        prompt_manager: Annotated[PromptManager, Depends(get_prompt_manager)]
+        prompt_manager: Annotated[PromptManager, Depends(get_prompt_manager)],
+        database: Annotated[Database, Depends(get_database)],
+        object_storage: Annotated[ObjectStorage, Depends(get_object_storage)]
     ):
         self._model_registry = model_registry
         self._events_queue = events_queue
         self._events_status = events_status
         self._prompts_manager = prompt_manager
 
-        self._bucket = ObjectStorage()
-        self._database = Database()
+        self._bucket = object_storage
+        self._database = database 
 
         self._tracked_events = dict[str, ProcessingRiotEventJob]()
 
@@ -73,7 +75,7 @@ class EventService:
 
     async def clear_events(self):
         """Clear all events"""
-        sizes = (len(self._tracked_events), len(self._events_queue), len(self._events_status)) 
+        sizes = (len(self._tracked_events), self._events_queue.qsize(), self._events_status.qsize()) 
         
         self._tracked_events.clear()
         
